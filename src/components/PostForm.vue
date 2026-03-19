@@ -21,9 +21,9 @@ const createPost = () => {
 <template>
   <form @submit.prevent="createPost">
     <h4>Создать пост</h4>
-    <input v-model="formData.title" type="text" placeholder="Название" class="input" />
-    <input v-model="formData.body" type="text" placeholder="Описание" class="input" />
-    <button class="btn">Создать</button>
+    <BaseInput v-model="formData.title" type="text" placeholder="Название" class="input" />
+    <BaseInput v-model="formData.body" type="text" placeholder="Описание" class="input" />
+    <BaseButton class="btn">Создать</BaseButton>
   </form>
 </template>
 
@@ -41,9 +41,5 @@ form {
 
 .btn {
   align-self: flex-end;
-  border: 1px solid teal;
-  padding: 10px 15px;
-  background: none;
-  color: teal;
 }
 </style>

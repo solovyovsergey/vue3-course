@@ -10,10 +10,20 @@ const { posts } = defineProps<Props>()
 </script>
 
 <template>
-  <div>
+  <div v-if="!!posts.length">
     <h3>Список постов</h3>
-    <PostItem v-for="post in posts" :key="post.id" :post="post" />
+    <PostItem
+      v-for="post in posts"
+      :key="post.id"
+      :post="post"
+      @remove="$emit('removePost', post)"
+    />
   </div>
+  <h2 v-else class="empty-msg">Список постов пуст</h2>
 </template>
 
-<style scoped></style>
+<style scoped>
+.empty-msg {
+  color: red;
+}
+</style>

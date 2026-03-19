@@ -11,12 +11,14 @@ const posts = ref<Post[]>([
   { id: baseIdx.value++, title: 'title2', body: 'body2' },
   { id: baseIdx.value++, title: 'title3', body: 'body3' },
 ])
+
+const removePost = (post: Post) => (posts.value = posts.value.filter((p) => p.id !== post.id))
 </script>
 
 <template>
   <div class="app">
     <PostForm @create="(post) => posts.push({ ...post, id: Date.now() })" />
-    <PostList :posts="posts" />
+    <PostList :posts="posts" @removePost="removePost" />
   </div>
 </template>
 
