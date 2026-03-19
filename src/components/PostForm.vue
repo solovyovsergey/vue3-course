@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { FomrData } from '@/types'
+import type { PostFormData } from '@/types'
 import { ref } from 'vue'
 
-const formData = ref<FomrData>({
+const formData = ref<PostFormData>({
   title: '',
   body: '',
 })
 
 const emit = defineEmits<{
-  create: [data: FomrData]
+  create: [data: PostFormData]
 }>()
 
 const createPost = () => {

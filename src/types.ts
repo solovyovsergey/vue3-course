@@ -4,4 +4,4 @@ export type Post = {
   id: number
 }
 
-export type FomrData = Omit<Post, 'id'>
+export type PostFormData = Omit<Post, 'id'>
