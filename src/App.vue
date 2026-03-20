@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watchEffect } from 'vue'
 import PostForm from './components/PostForm.vue'
 import type { Post, PostFormData } from './types'
 import PostList from './components/PostList.vue'
@@ -14,6 +14,9 @@ const searchQuery = ref<string>('')
 const pageSize = 10
 const currentPageNum = ref(1)
 const pageTotalCount = ref(0)
+
+const observer = ref<IntersectionObserver>()
+const observerRef = useTemplateRef('observer')
 
 type SelectType = keyof Omit<Post, 'id'>
 const selectValue = ref<SelectType>('title')
@@ -40,7 +43,7 @@ const removePost = (post: Post) => {
   posts.value = posts.value.filter((p) => p.id !== post.id)
 }
 
-const fetchPosts = () => {
+const loadMorePosts = () => {
   isPostsLoading.value = true
 
   axios
@@ -48,14 +51,55 @@ const fetchPosts = () => {
       params: { _limit: pageSize, _page: currentPageNum.value },
     })
     .then((response) => {
-      posts.value = response.data
+      posts.value = [...posts.value, ...response.data]
       pageTotalCount.value = response.headers['x-total-count'] || 0
     })
     .catch((e) => alert(e.message))
     .finally(() => (isPostsLoading.value = false))
 }
 
-watchEffect(fetchPosts)
+// const fetchPosts = () => {
+//   isPostsLoading.value = true
+
+//   axios
+//     .get<Post[]>('https://jsonplaceholder.typicode.com/posts', {
+//       params: { _limit: pageSize, _page: currentPageNum.value },
+//     })
+//     .then((response) => {
+//       posts.value = response.data
+//       pageTotalCount.value = response.headers['x-total-count'] || 0
+//     })
+//     .catch((e) => alert(e.message))
+//     .finally(() => (isPostsLoading.value = false))
+// }
+
+// watchEffect(fetchPosts)
+
+onMounted(() => {
+  loadMorePosts()
+
+  const options = {
+    rootMargin: '0px',
+    threshold: 1.0,
+  }
+
+  const callback: IntersectionObserverCallback = function (entries) {
+    const hasMore = currentPageNum.value < Math.ceil(pageTotalCount.value / pageSize)
+
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && hasMore && !isPostsLoading.value) {
+        currentPageNum.value += 1
+        loadMorePosts()
+      }
+    })
+  }
+  observer.value = new IntersectionObserver(callback, options)
+  if (observerRef.value) observer.value.observe(observerRef.value)
+})
+
+onUnmounted(() => {
+  observer.value?.disconnect()
+})
 </script>
 
 <template>
@@ -69,9 +113,10 @@ watchEffect(fetchPosts)
     <BaseDialog v-model:show="isDialogVisible">
       <PostForm @create="createPost" />
     </BaseDialog>
-    <PostList v-if="!isPostsLoading" :posts="sortedAndSearchedPosts" @removePost="removePost" />
-    <div v-else>Идет загрузка...</div>
-    <BasePagination :total="pageTotalCount" :pageSize="pageSize" v-model:current="currentPageNum" />
+    <PostList :posts="sortedAndSearchedPosts" @removePost="removePost" />
+    <div ref="observer" />
+    <!-- <div v-if="isPostsLoading">Идет загрузка...</div> -->
+    <!-- <BasePagination :total="pageTotalCount" :pageSize="pageSize" v-model:current="currentPageNum" /> -->
   </div>
 </template>
 

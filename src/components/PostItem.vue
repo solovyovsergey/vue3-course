@@ -15,6 +15,7 @@ const emit = defineEmits<{
 <template>
   <div class="post">
     <div>
+      <p>{{ post.id }}</p>
       <div><strong>Название: </strong>{{ post.title }}</div>
       <div><strong>Описание: </strong>{{ post.body }}</div>
     </div>
@@ -30,5 +31,6 @@ const emit = defineEmits<{
   display: flex;
   justify-content: space-between;
   align-items: center;
+  overflow-anchor: none; /* fix: предотвращаем зависание скролла при добавлении новых постов в начало списка */
 }
 </style>
