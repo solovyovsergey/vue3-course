@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import PostForm from './components/PostForm.vue'
 import type { Post, PostFormData } from './types'
 import PostList from './components/PostList.vue'
@@ -10,6 +10,10 @@ const posts = ref<Post[]>([])
 const isDialogVisible = ref(false)
 const isPostsLoading = ref(false)
 const searchQuery = ref<string>('')
+
+const pageSize = 10
+const currentPageNum = ref(1)
+const pageTotalCount = ref(0)
 
 type SelectType = keyof Omit<Post, 'id'>
 const selectValue = ref<SelectType>('title')
@@ -40,13 +44,18 @@ const fetchPosts = () => {
   isPostsLoading.value = true
 
   axios
-    .get<Post[]>('https://jsonplaceholder.typicode.com/posts', { params: { _limit: 10 } })
-    .then((response) => (posts.value = response.data))
+    .get<Post[]>('https://jsonplaceholder.typicode.com/posts', {
+      params: { _limit: pageSize, _page: currentPageNum.value },
+    })
+    .then((response) => {
+      posts.value = response.data
+      pageTotalCount.value = response.headers['x-total-count'] || 0
+    })
     .catch((e) => alert(e.message))
     .finally(() => (isPostsLoading.value = false))
 }
 
-onMounted(fetchPosts)
+watchEffect(fetchPosts)
 </script>
 
 <template>
@@ -62,6 +71,7 @@ onMounted(fetchPosts)
     </BaseDialog>
     <PostList v-if="!isPostsLoading" :posts="sortedAndSearchedPosts" @removePost="removePost" />
     <div v-else>Идет загрузка...</div>
+    <BasePagination :total="pageTotalCount" :pageSize="pageSize" v-model:current="currentPageNum" />
   </div>
 </template>
 
