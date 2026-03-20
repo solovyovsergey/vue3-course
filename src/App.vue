@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import PostForm from './components/PostForm.vue'
 import type { Post, PostFormData } from './types'
 import PostList from './components/PostList.vue'
@@ -9,6 +9,7 @@ const posts = ref<Post[]>([])
 
 const isDialogVisible = ref(false)
 const isPostsLoading = ref(false)
+const searchQuery = ref<string>('')
 
 type SelectType = keyof Omit<Post, 'id'>
 const selectValue = ref<SelectType>('title')
@@ -17,8 +18,10 @@ const options: { name: string; value: SelectType }[] = [
   { name: 'По Контенту', value: 'body' },
 ]
 
-const sortedPosts = computed(() =>
-  [...posts.value].sort((p1, p2) => p1[selectValue.value].localeCompare(p2[selectValue.value])),
+const sortedAndSearchedPosts = computed(() =>
+  [...posts.value]
+    .sort((p1, p2) => p1[selectValue.value].localeCompare(p2[selectValue.value]))
+    .filter((p) => p.title.toLowerCase().includes(searchQuery.value.toLowerCase())),
 )
 
 // alternative sorting implementation
@@ -49,6 +52,7 @@ onMounted(fetchPosts)
 <template>
   <div class="app">
     <h1>Страница с постами</h1>
+    <BaseInput v-model="searchQuery" placeholder="Поиск..." />
     <div class="controls">
       <BaseButton @click="isDialogVisible = true">Создать пост</BaseButton>
       <BaseSelect v-model="selectValue" :options="options" />
@@ -56,7 +60,7 @@ onMounted(fetchPosts)
     <BaseDialog v-model:show="isDialogVisible">
       <PostForm @create="createPost" />
     </BaseDialog>
-    <PostList v-if="!isPostsLoading" :posts="sortedPosts" @removePost="removePost" />
+    <PostList v-if="!isPostsLoading" :posts="sortedAndSearchedPosts" @removePost="removePost" />
     <div v-else>Идет загрузка...</div>
   </div>
 </template>
@@ -70,6 +74,10 @@ onMounted(fetchPosts)
 
 .app {
   padding: 20px;
+}
+
+h1 {
+  margin-bottom: 15px;
 }
 
 .controls {
