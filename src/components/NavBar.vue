@@ -9,7 +9,9 @@ const router = useRouter()
     <RouterLink to="/" class="main-link">Vue 3 App</RouterLink>
     <div class="group-btn">
       <BaseButton @click="router.push('/posts')">Посты</BaseButton>
+      <!-- <BaseButton @click="router.push('/posts-config')">Настройки</BaseButton> -->
       <BaseButton @click="router.push('/about')">О сайте</BaseButton>
+      <BaseButton @click="router.push('/counter')">Counter</BaseButton>
     </div>
   </nav>
 </template>
