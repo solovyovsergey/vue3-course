@@ -1,5 +1,5 @@
 import VFocus from './VFocus'
-import VIntersection from './Vintersection'
+import VIntersection from './VIntersection'
 
 export default {
   focus: VFocus,
