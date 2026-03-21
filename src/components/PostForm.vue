@@ -21,7 +21,7 @@ const createPost = () => {
 <template>
   <form @submit.prevent="createPost">
     <h4>Создать пост</h4>
-    <BaseInput v-model="formData.title" type="text" placeholder="Название" />
+    <BaseInput v-focus v-model="formData.title" type="text" placeholder="Название" />
     <BaseInput v-model="formData.body" type="text" placeholder="Описание" />
     <BaseButton class="btn">Создать</BaseButton>
   </form>

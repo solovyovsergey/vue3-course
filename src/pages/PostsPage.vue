@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import axios from 'axios'
 import type { Post, PostFormData } from '@/types'
@@ -18,9 +18,6 @@ const searchQuery = ref<string>('')
 const pageSize = 10
 const currentPageNum = ref(1)
 const pageTotalCount = ref(0)
-
-const observer = ref<IntersectionObserver>()
-const observerRef = useTemplateRef('observer')
 
 type SelectType = keyof Omit<Post, 'id'>
 const selectValue = ref<SelectType>('title')
@@ -79,37 +76,26 @@ const loadMorePosts = () => {
 
 // watchEffect(fetchPosts)
 
+const observerCallback: IntersectionObserverCallback = (entries) => {
+  const hasMore = currentPageNum.value < Math.ceil(pageTotalCount.value / pageSize)
+
+  entries.forEach((entry) => {
+    if (entry.isIntersecting && hasMore && !isPostsLoading.value) {
+      currentPageNum.value += 1
+      loadMorePosts()
+    }
+  })
+}
+
 onMounted(() => {
   loadMorePosts()
-
-  const options = {
-    rootMargin: '0px',
-    threshold: 1.0,
-  }
-
-  const callback: IntersectionObserverCallback = function (entries) {
-    const hasMore = currentPageNum.value < Math.ceil(pageTotalCount.value / pageSize)
-
-    entries.forEach((entry) => {
-      if (entry.isIntersecting && hasMore && !isPostsLoading.value) {
-        currentPageNum.value += 1
-        loadMorePosts()
-      }
-    })
-  }
-  observer.value = new IntersectionObserver(callback, options)
-  if (observerRef.value) observer.value.observe(observerRef.value)
-})
-
-onUnmounted(() => {
-  observer.value?.disconnect()
 })
 </script>
 
 <template>
   <div>
     <h1>Страница с постами</h1>
-    <BaseInput v-model="searchQuery" placeholder="Поиск..." />
+    <BaseInput v-focus v-model="searchQuery" placeholder="Поиск..." />
     <div class="controls">
       <BaseButton @click="isDialogVisible = true">Создать пост</BaseButton>
       <BaseSelect v-model="selectValue" :options="options" />
@@ -122,7 +108,7 @@ onUnmounted(() => {
       @removePost="removePost"
       @openPost="router.push(`/posts/${$event.id}`)"
     />
-    <div ref="observer" />
+    <div v-intersection="observerCallback" />
     <!-- <div v-if="isPostsLoading">Идет загрузка...</div> -->
     <!-- <BasePagination :total="pageTotalCount" :pageSize="pageSize" v-model:current="currentPageNum" /> -->
   </div>
