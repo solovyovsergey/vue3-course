@@ -5,8 +5,11 @@ import axios from 'axios'
 import type { Post, PostFormData } from '@/types'
 import PostForm from '@/components/PostForm.vue'
 import PostList from '@/components/PostList.vue'
+import { useRouter } from 'vue-router'
 
 const posts = ref<Post[]>([])
+
+const router = useRouter()
 
 const isDialogVisible = ref(false)
 const isPostsLoading = ref(false)
@@ -114,7 +117,11 @@ onUnmounted(() => {
     <BaseDialog v-model:show="isDialogVisible">
       <PostForm @create="createPost" />
     </BaseDialog>
-    <PostList :posts="sortedAndSearchedPosts" @removePost="removePost" />
+    <PostList
+      :posts="sortedAndSearchedPosts"
+      @removePost="removePost"
+      @openPost="router.push(`/posts/${$event.id}`)"
+    />
     <div ref="observer" />
     <!-- <div v-if="isPostsLoading">Идет загрузка...</div> -->
     <!-- <BasePagination :total="pageTotalCount" :pageSize="pageSize" v-model:current="currentPageNum" /> -->

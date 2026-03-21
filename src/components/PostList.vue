@@ -18,6 +18,7 @@ const { posts } = defineProps<Props>()
         :key="post.id"
         :post="post"
         @remove="$emit('removePost', post)"
+        @open="$emit('openPost', post)"
       />
     </TransitionGroup>
   </div>
